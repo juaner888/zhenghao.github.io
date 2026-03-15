@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"> <!-- 明确指定编码为UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频播放器（后台配置版）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .audio-container {
+            max-width: 800px;
+            margin: 50px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .audio-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        audio {
+            width: 100%;
+            outline: none;
+            margin-bottom: 15px;
+        }
+
+        .audio-list {
+            margin-top: 30px;
+        }
+
+        .audio-item {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+
+        .audio-item h3 {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="audio-container">
+        <h2 class="audio-title">音频播放列表</h2>
+        
+        <!-- 音频列表容器 -->
+        <div class="audio-list" id="audioList">
+            <!-- 音频会通过后台配置的数组自动渲染到这里 -->
+        </div>
+    </div>
+
+    <script>
+        // ========== 后台配置区（仅需修改这里即可添加/修改音频） ==========
+        // 音频数据数组：后续添加音频只需往这个数组里加对象即可
+        const audioData = [
+            // 第一个音频（你的原始音频）
+            {title: "01-26年高二强化快版（试题1）纯美音",
+             url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/01-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%981%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "02-26年高二强化快版（试题2）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/02-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%982%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "03-26年高二强化快版（试题3）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/03-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%983%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "04-26年高二强化快版（试题4）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/04-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%984%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "05-26年高二强化快版（试题5）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/05-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%985%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "06-26年高二强化快版（试题6）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/06-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%986%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "07-26年高二强化快版（试题7）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/07-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%987%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "08-26年高二强化快版（试题8）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/08-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%988%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "09-26年高二强化快版（试题29）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/09-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%989%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "10-26年高二强化快版（试题10）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/10-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9810%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "11-26年高二强化快版（试题11）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/11-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9811%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "12-26年高二强化快版（试题12）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/12-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9812%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "13-26年高二强化快版（试题13）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/13-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9813%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "14-26年高二强化快版（试题14）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/14-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9814%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "15-26年高二强化快版（试题15）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/15-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9815%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "16-26年高二强化快版（试题16）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/16-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9816%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "17-26年高二强化快版（试题17）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/17-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9817%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "18-26年高二强化快版（试题8）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/18-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9818%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "19-26年高二强化快版（试题19）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/19-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9819%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "20-26年高二强化快版（试题20）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/20-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9820%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "21-26年高二强化快版（试题21）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/21-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9821%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "22-26年高二强化快版（试题22）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/22-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9822%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "23-26年高二强化快版（试题23）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/23-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9823%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "24-26年高二强化快版（试题24）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/24-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9824%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "25-26年高二强化快版（试题25）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/25-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9825%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "26-26年高二强化快版（试题26）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/26-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9826%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "27-26年高二强化快版（试题27）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/27-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9827%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "28-26年高二强化快版（试题28）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/28-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9828%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "29-26年高二强化快版（试题29）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/29-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9829%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "30-26年高二强化快版（试题30）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/31-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9831%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "31-26年高二强化快版（试题31）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/02-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%982%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "32-26年高二强化快版（试题32）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/32-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9832%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "33-26年高二强化快版（试题33）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/33-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9833%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "34-26年高二强化快版（试题34）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/34-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9834%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "35-26年高二强化快版（试题35）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/35-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9835%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "36-26年高二强化快版（试题36）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/36-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9836%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "37-26年高二强化快版（试题37）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/37-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9837%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "38-26年高二强化快版（试题38）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/38-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9838%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "39-26年高二强化快版（试题39）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/39-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9839%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "40-26年高二强化快版（试题40）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/40-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9840%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "41-26年高二强化快版（试题41）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/41-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9841%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "42-26年高二强化快版（试题42）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/42-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9842%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "43-26年高二强化快版（试题43）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/43-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9843%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "44-26年高二强化快版（试题44）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/44-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9844%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "45-26年高二强化快版（试题45）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/45-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9845%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "46-26年高二强化快版（试题46）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/46-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9846%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "47-26年高二强化快版（试题47）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/47-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9847%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "48-26年高二强化快版（试题48）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/48-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9848%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "49-26年高二强化快版（试题49）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/49-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9849%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "50-26年高二强化快版（试题50）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/50-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9850%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "51-26年高二强化快版（试题51）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/51-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9851%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "52-26年高二强化快版（试题52）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/52-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9852%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"},
+            { title: "53-26年高二强化快版（试题53）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/53-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9853%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "54-26年高二强化快版（试题54）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/54-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9854%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "55-26年高二强化快版（试题55）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/55-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9855%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+            { title: "56-26年高二强化快版（试题56）纯美音.mp3",
+              url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/56-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%9856%EF%BC%89%E8%8B%B1%E7%BE%8E%E6%B7%B7%E5%90%88.mp3"},
+ 
+            // 示例：后续添加音频，直接复制下面这行，修改title和url即可
+            // {
+            //     title: "02-26年高二强化快版（试题2）纯美音.mp3",
+            //     url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/02-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%982%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"
+            // },
+            // {
+            //     title: "	03-26年高二强化快版（试题3）纯美音.mp3",
+            //     url: "https://juaner-1411453991.cos.ap-nanjing.myqcloud.com/03-26%E5%B9%B4%E9%AB%98%E4%BA%8C%E5%BC%BA%E5%8C%96%E5%BF%AB%E7%89%88%EF%BC%88%E8%AF%95%E9%A2%983%EF%BC%89%E7%BA%AF%E7%BE%8E%E9%9F%B3.mp3"
+            // }
+        ];
+
+        // ========== 渲染音频列表（无需修改） ==========
+        function renderAudioList() {
+            const audioListContainer = document.getElementById("audioList");
+            // 清空容器（避免重复渲染）
+            audioListContainer.innerHTML = "";
+
+            // 遍历音频数组，生成播放器
+            audioData.forEach((audioItem, index) => {
+                const audioElement = document.createElement("div");
+                audioElement.className = "audio-item";
+                audioElement.innerHTML = `
+                    <h3>${index + 1}. ${audioItem.title}</h3>
+                    <audio controls preload="metadata">
+                        <source src="${audioItem.url}" type="audio/mpeg">
+                        你的浏览器不支持音频播放，请升级浏览器！
+                    </audio>
+                `;
+                audioListContainer.appendChild(audioElement);
+            });
+        }
+
+        // 页面加载完成后自动渲染音频列表
+        window.onload = renderAudioList;
+    </script>
+</body>
+</html>
